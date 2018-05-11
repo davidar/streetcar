@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityStandardAssets.Utility;
 using Mapbox.Directions;
 using Mapbox.Geocoding;
 using Mapbox.Json;
@@ -32,6 +33,7 @@ public class CurrentLocation : MonoBehaviour {
     bool _needDirections;
 
     void Start() {
+        _elapsedTime = 2.8f;
         _needDirections = true;
     }
 
@@ -63,11 +65,14 @@ public class CurrentLocation : MonoBehaviour {
         Debug.Log(JsonConvert.SerializeObject(res, Formatting.Indented, JsonConverters.Converters));
         LineRenderer lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.positionCount = res.Routes[0].Geometry.Count;
+        WaypointCircuit circuit = GetComponent<WaypointCircuit>();
+        circuit.waypointList.items = new Transform[lineRenderer.positionCount];
         for (int i = 0; i < lineRenderer.positionCount; i++) {
             Vector2d waypointCoord = res.Routes[0].Geometry[i];
             Debug.Log(waypointCoord);
             GameObject waypoint = Instantiate(_waypointPrefab, Vector3.zero, Quaternion.identity);
             waypoint.transform.MoveToGeocoordinate(waypointCoord, _map.CenterMercator, _map.WorldRelativeScale);
+            circuit.waypointList.items[i] = waypoint.transform;
             lineRenderer.SetPosition(i, waypoint.transform.position + 0.15f * Vector3.up);
         }
     }
